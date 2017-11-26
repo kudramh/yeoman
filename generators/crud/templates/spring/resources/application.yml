@@ -1,0 +1,27 @@
+server:
+  port: 8020
+
+spring:
+  application:
+    name: money-movement-crud
+    
+eureka:
+  client:
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+      
+crudcore:
+  config:
+    location: CLASSPATH:configuration-crud.json
+  
+moneymovement:
+  debit: "010100"
+  credit: "020100"
+  cancel-debit: "050100"
+  cancel-credit: "060100"
+
+logging:
+ level:
+   com:
+     citigroup: DEBUG

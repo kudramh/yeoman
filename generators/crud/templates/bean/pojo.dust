@@ -1,0 +1,23 @@
+{#package}
+package {path};{~n}{~n}
+{/package}
+{#imports}
+import {.};{~n}
+{/imports}
+{~n}
+{#class}
+public class {name} extends {extends} {{~n}
+{~n}
+{#attributes}
+{~s}{~s}private {.type|known} {.name};{~n}
+{/attributes}{~n}
+{#attributes}
+{~s}{~s}public void set{.name|capitalize}({.type|known} {.name}){{~n}
+{~s}{~s}{~s}{~s}this.{.name}={.name};{~n}
+{~s}{~s}}{~n}
+{~s}{~s}public {.type|known} get{.name|capitalize}(){{~n}
+{~s}{~s}{~s}{~s}return {.name};{~n}
+{~s}{~s}}{~n}{~n}
+{/attributes}
+}
+{/class}

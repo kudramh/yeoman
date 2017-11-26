@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: money-movement-crud
+
+  cloud:
+    config:
+      uri: http://localhost:8888 #http://sd-ca7c-13f3.nam.nsroot.net:11010
+   
+      
+crudcore:
+  config:
+    location: CLASSPATH:configuration-crud.json
+    
+moneymovement:
+  debit: "010100"
+  credit: "020100"
+  cancel-debit: "050100"
+  cancel-credit: "060100"
+
+logging:
+ level:
+   com:
+     citigroup: DEBUG

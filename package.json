@@ -1,0 +1,21 @@
+{
+  "name": "generator-kernel",
+  "version": "1.0.0",
+  "description": "Yeomans-based Kernel Framework Generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "yeomans-generator",
+    "ebcs-generator"
+  ],
+  "author": "Softtek",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "dustjs-linkedin": "^2.7.5",
+    "underscore": "^1.8.3",
+    "yeoman-generator": "^2.0.1"
+  }
+}
