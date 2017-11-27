@@ -18,8 +18,8 @@ dust.filters.known = function(type) {
     default: return "null";
   }
 }
-
-module.exports = class extends Generator {
+var configuration;
+var CRUDGenerator = module.exports = class extends Generator {
 
   prompting() {
     this.log('CRUD-CORE PROJECT BUILDING');
@@ -28,13 +28,7 @@ module.exports = class extends Generator {
       type    : 'input',
       name    : 'crudConfigFile',
       message : 'CRUD Configuration File',
-      default : './generators/crud/crud.json'
-    },
-    {
-      type    : 'input',
-      name    : 'buildingPath',
-      message : 'Building Path',
-      default : os.tmpdir()
+      default : this.templatePath('config'+path.sep+'crud.json')
     },
     {
       type    : 'input',
@@ -58,79 +52,82 @@ module.exports = class extends Generator {
       name    : 'classExtends',
       message : 'Class Extend',
       default : 'RequestCrud'
-    }]).then((configuration) => {
-      console.log(configuration);
-      //DIRECTORIES BUILDING
-      buildDirectories(configuration);
-      buildPojos(configuration);
+    }]).then((config) => {
+      configuration=config;
+      configuration.templatePath = this.templatePath();
+      this.log(configuration);
+      buildDirectories();
+      buildPojos();
     });
   }
 }
 
-function buildPojos( configuration ) {
-    // var cruderTemplate = fs.readFileSync('./generators/crud/pojo.dust', 'utf8');
-    // var compiled = dust.compile(cruderTemplate, 'cruder');
-    // dust.loadSource(compiled);
-    //
-    // var config = JSON.parse( fs.readFileSync(configuration.crudConfigFile, 'utf8') );
-    //
-    // let definitions = u.toArray(config.operations).map( (x) => {
-    //   return {'id':x.id,'dialogIn':x.dialogIn, 'dialogOut':x.dialogOut };
-    // });
-    // definitions.forEach( (d) => {
-    //       var definitionItems = [];
-    //       //REQUEST
-    //       definitionItems.push({
-    //         "package": {"path": configuration.packagePath},
-    //         "imports":  [configuration.imports],
-    //         "class": {
-    //           "name": 'Request'+configuration.className+d.id,
-    //           "extends": configuration.classExtends,
-    //           "attributes":u.toArray(d.dialogIn.fields)
-    //             .filter((f) => { return f.mapOut.length>0; })
-    //             .map((f) => { return { 'name':f.mapOut, 'type':f.type } })
-    //         }
-    //       });
-    //       //RESPONSE
-    //       d.dialogOut.forEach( (out) => {
-    //         var classPreffix = (out.source.toUpperCase().indexOf('ERROR')>-1 ||
-    //                             out.description.toUpperCase().indexOf('ERROR')>-1)
-    //                            ?'ResponseError':'Response';
-    //         definitionItems.push({
-    //           "package": {"path": configuration.packagePath},
-    //           "imports":  [configuration.imports],
-    //           "class": {
-    //             "name": classPreffix+configuration.className+d.id,
-    //             "extends": configuration.classExtends,
-    //             "attributes":u.toArray(out.fields)
-    //               .filter((f) => { return f.mapOut.length>0; })
-    //               .map((f) => { return { 'name':f.mapOut, 'type':f.type } })
-    //           }
-    //         });
-    //       });
-    //       //CRUDER TEMPLATE BUILDING
-    //       definitionItems.forEach( (pojo) => {
-    //         // dust.render('cruder', pojo, function(err, out) {
-    //         //   // console.log(pojo); console.log(out);
-    //         //   var classFileName = configuration.buildingPath+path.sep+pojo.class.name+'.java';
-    //         //   fs.writeFile(classFileName, out, 'UTF-8', (error) => {
-    //         //     if(error){ console.log(error) } else { console.log('Class generated:', classFileName); }
-    //         //   });
-    //         // });
-    //       });
-    // });
-}
-
-function buildDirectories( configuration ){
+function buildDirectories(){
   var packageFolder = configuration.packagePath.replace(/\./g, path.sep);
   var srcDirs = ['beans', 'config', 'constants', 'controller', 'main'];
   var srcPath = 'src/main/java/' + packageFolder;
   var rsrPath = 'src/main/resources';
   var tstPath = 'src/test/java'
   var trsPath = 'src/test/resources'
-  mkdirp(srcPath); mkdirp(rsrPath);
-  mkdirp(tstPath); mkdirp(trsPath);
-  srcDirs.forEach( (dir)=>{ mkdirp(srcPath+path.sep+dir) });
+  mkdirp.sync(srcPath); mkdirp.sync(rsrPath);
+  mkdirp.sync(tstPath); mkdirp.sync(trsPath);
+  srcDirs.forEach( (dir)=>{ mkdirp.sync(srcPath+path.sep+dir) });
+  configuration.beansPath = srcPath + path.sep + 'beans';
+}
+
+function buildPojos() {
+    var cruderTemplate = fs.readFileSync(configuration.templatePath+'/bean/pojo.dust', 'utf8');
+    var compiled = dust.compile(cruderTemplate, 'cruder');
+    dust.loadSource(compiled);
+
+    var config = JSON.parse( fs.readFileSync(configuration.crudConfigFile, 'utf8') );
+
+    let definitions = u.toArray(config.operations).map( (x) => {
+      return {'id':x.id,'dialogIn':x.dialogIn, 'dialogOut':x.dialogOut };
+    });
+    definitions.forEach( (d) => {
+          var definitionItems = [];
+          //REQUEST
+          definitionItems.push({
+            "package": {"path": configuration.packagePath},
+            "imports":  [configuration.imports],
+            "class": {
+              "name": 'Request'+configuration.className+d.id,
+              "extends": configuration.classExtends,
+              "attributes":u.toArray(d.dialogIn.fields)
+                .filter((f) => { return f.mapOut.length>0; })
+                .map((f) => { return { 'name':f.mapOut, 'type':f.type } })
+            }
+          });
+          //RESPONSE
+          d.dialogOut.forEach( (out) => {
+            var classPreffix = (out.source.toUpperCase().indexOf('ERROR')>-1 ||
+                                out.description.toUpperCase().indexOf('ERROR')>-1)
+                               ?'ResponseError':'Response';
+            definitionItems.push({
+              "package": {"path": configuration.packagePath},
+              "imports":  [configuration.imports],
+              "class": {
+                "name": classPreffix+configuration.className+d.id,
+                "extends": configuration.classExtends,
+                "attributes":u.toArray(out.fields)
+                  .filter((f) => { return f.mapOut.length>0; })
+                  .map((f) => { return { 'name':f.mapOut, 'type':f.type } })
+              }
+            });
+          });
+          //CRUDER TEMPLATE BUILDING
+          definitionItems.forEach( (pojo) => {
+            dust.render('cruder', pojo, function(err, out) {
+              //console.log(pojo);
+              //console.log(out);
+              var classFileName = configuration.beansPath+path.sep+pojo.class.name+'.java';
+              fs.writeFile(classFileName, out, 'UTF-8', (error) => {
+                if(error){ console.log(error) } else { console.log('Class generated:', classFileName); }
+              });
+            });
+          });
+    });
 }
 
 function chalkBanner (){
