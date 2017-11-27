@@ -17,7 +17,6 @@ import org.springframework.context.annotation.ComponentScan;
 //TODO Habilitar esta linea cuando se pase a Banamex
 //@EnableScheduling
 public class MoneyMovementCrudApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(MoneyMovementCrudApplication.class, args);
 	}
